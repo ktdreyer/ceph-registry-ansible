@@ -1,0 +1,10 @@
+[all:vars]
+ansible_user=centos
+pipelining=true
+
+[prod]
+registry.ceph.com
+
+[kdreyer-registry]
+#kdreyer-registry.os1.phx2.redhat.com
+kdreyer-registry.ceph.redhat.com

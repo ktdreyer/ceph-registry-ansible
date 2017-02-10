@@ -1,0 +1,50 @@
+# Adding eth0 to the "external" zone allows masquerading to work.
+# This allows containers to communicate with the internet.
+
+# RFE for a possibly better way to do this with the nmcli module:
+# https://github.com/ansible/ansible/issues/21591
+- name: add eth0 to external zone after reboots
+  lineinfile:
+    dest: "/etc/sysconfig/network-scripts/ifcfg-{{ ansible_default_ipv4.interface }}"
+    regexp: '^ZONE='
+    line: "ZONE=external"
+  become: yes
+
+- name: install firewalld
+  yum:
+    name: firewalld
+    state: present
+  become: yes
+
+# No longer necessary?
+- name: configure custom Docker firewalld zone
+  template:
+    src: firewalld/zones/docker.xml
+    dest: /etc/firewalld/zones/docker.xml
+  become: yes
+  notify:
+   - restart firewalld
+
+- name: start and enable firewalld
+  service:
+    name: firewalld
+    enabled: yes
+    state: started
+  become: yes
+
+- name: add eth0 interface to external zone (live)
+  firewalld:
+    zone: external
+    interface: "{{ ansible_default_ipv4.interface }}"
+    permanent: true
+    state: enabled
+  become: yes
+
+- name: open HTTPS firewall port
+  firewalld:
+    zone: external
+    service: https
+    immediate: true
+    permanent: true
+    state: enabled
+  become: yes

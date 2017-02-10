@@ -1,0 +1,125 @@
+# Steps from http://docs.projectatomic.io/registry/latest/registry_quickstart/administrators/index.html#registry-quickstart-administrators-index
+
+- name: install atomic
+  yum:
+    name: atomic
+    state: present
+  become: yes
+
+# Note:
+# By default, docker tries to manipulate iptables rules to allow traffic to and
+# from containers. This conflicts with firewalld and can lead to weird
+# behavior. For example:
+# - A container's port might become directly accessible from the internet
+#   without opening a port in firewalld.
+# - Containers cannot communicate with each other until we add docker0 to the
+#   "trusted" zone.
+# In my tests, these behaviors differ depending on whether firewalld or docker
+# was restarted last.
+
+# To work around this behavior, we have to pass the "--iptables=false" option
+# to the docker daemon using /etc/sysconfig/docker.
+
+- name: set /etc/sysconfig/docker
+  template:
+    src: sysconfig/docker
+    dest: /etc/sysconfig/docker
+  become: yes
+  notify:
+   - restart docker
+
+- name: start and enable docker daemon
+  service:
+    name: docker
+    enabled: yes
+    state: started
+  become: yes
+
+# If /etc/atomic-registry does not exist, run the "atomic install" command
+# that sets it up:
+- stat:
+    path: "/etc/atomic-registry"
+  register: etc_atomic_registry
+
+- name: install atomic-registry-install container
+  command: atomic install projectatomic/atomic-registry-install {{ ansible_fqdn }}
+  when: etc_atomic_registry.stat.exists == False
+  become: yes
+
+- name: run setup-atomic-registry.sh shell script
+  command: /var/run/setup-atomic-registry.sh {{ ansible_fqdn }}
+  when: etc_atomic_registry.stat.exists == False
+  become: yes
+
+# "docker ps" should show all three atomic containers running at this point.
+
+# Things we're configuring in this atomic registry master config file:
+# - Removing ":8443" from the public URLs ("assetPublicURL" "masterPublicURL")
+# - Configuring GitHub authentication
+- name: configure atomic-registry-master
+  template:
+    src: master-config.yaml
+    dest: /etc/atomic-registry/master/master-config.yaml
+    backup: yes
+  become: yes
+  notify:
+   - restart atomic-registry-master
+
+# Problem: writing this file completely will wipe out REGISTRY_HTTP_SECRET
+# Use lineinfile instead (see below)
+#- name: set /etc/sysconfig/atomic-registry
+#  template:
+#    src: sysconfig/atomic-registry
+#    dest: /etc/sysconfig/atomic-registry
+#    backup: yes
+#  become: yes
+#  notify:
+#   - restart atomic-registry
+
+- name: set DOCKER_REGISTRY_SERVICE_HOST
+  lineinfile:
+    dest: /etc/sysconfig/atomic-registry
+    regexp: '^DOCKER_REGISTRY_SERVICE_HOST='
+    line: "DOCKER_REGISTRY_SERVICE_HOST={{ ansible_fqdn }}"
+  become: yes
+
+- name: set KUBERNETES_SERVICE_HOST
+  lineinfile:
+    dest: /etc/sysconfig/atomic-registry
+    regexp: '^KUBERNETES_SERVICE_HOST='
+    line: "KUBERNETES_SERVICE_HOST={{ ansible_fqdn }}"
+  become: yes
+
+- name: set KUBERNETES_PORT_8443_TCP_ADDR
+  lineinfile:
+    dest: /etc/sysconfig/atomic-registry
+    regexp: '^KUBERNETES_PORT_8443_TCP_ADDR='
+    line: "KUBERNETES_PORT_8443_TCP_ADDR={{ ansible_fqdn }}"
+  become: yes
+
+- name: set KUBERNETES_PORT_8443_TCP_ADDR
+  lineinfile:
+    dest: /etc/sysconfig/atomic-registry
+    regexp: '^KUBERNETES_PORT_8443_TCP='
+    line: "KUBERNETES_PORT_8443_TCP=tcp://{{ ansible_fqdn }}:8443"
+  become: yes
+
+- name: set /etc/sysconfig/atomic-registry-console
+  template:
+    src: sysconfig/atomic-registry-console
+    dest: /etc/sysconfig/atomic-registry-console
+    backup: yes
+  become: yes
+  notify:
+   - restart atomic-registry-console
+
+- name: start and enable services
+  service:
+    name: "{{ item }}"
+    enabled: yes
+    state: started
+  become: yes
+  with_items:
+    - atomic-registry-master
+    - atomic-registry
+    - atomic-registry-console

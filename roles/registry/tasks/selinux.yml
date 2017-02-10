@@ -1,0 +1,13 @@
+---
+
+- name: set selinux to enforcing mode
+  selinux:
+    state: enforcing
+    policy: targeted
+  become: yes
+
+- seboolean:
+    name: httpd_can_network_connect
+    state: yes
+    persistent: yes
+  become: yes

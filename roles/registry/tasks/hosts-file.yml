@@ -1,0 +1,8 @@
+- name: set inventory host IPs in /etc/hosts
+  lineinfile:
+    dest: /etc/hosts
+    regexp: ' {{ item }}$'
+    line: "{{ hostvars[item].ansible_default_ipv4.address }} {{ item }}"
+  with_items:
+    - "{{ play_hosts }}"
+  become: true

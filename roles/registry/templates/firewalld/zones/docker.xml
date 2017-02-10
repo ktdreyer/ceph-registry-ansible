@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<zone>
+  <short>Docker</short>
+  <description>For Docker bridge</description>
+  <interface name="docker0"/>
+  <!-- masquerade/ -->
+</zone>

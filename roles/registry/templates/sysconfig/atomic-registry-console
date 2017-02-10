@@ -1,0 +1,14 @@
+# Uncomment to enable debug messages
+#G_MESSAGES_DEBUG=cockpit-ws,cockpit-wrapper,cockpit-bridge
+REGISTRY_ONLY=true
+OPENSHIFT_OAUTH_CLIENT_ID=cockpit-oauth-client
+
+# Set to false to use your own SSL certificates
+KUBERNETES_INSECURE=true
+OPENSHIFT_OAUTH_PROVIDER_URL=https://{{ ansible_fqdn }}
+REGISTRY_HOST={{ ansible_fqdn }}
+CONSOLEPORT=9090
+CONSOLEIMAGE=cockpit/kubernetes
+CONSOLETAG=latest
+KUBERNETES_SERVICE_HOST={{ ansible_fqdn }}
+KUBERNETES_SERVICE_PORT=443

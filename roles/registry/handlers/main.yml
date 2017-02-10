@@ -1,0 +1,35 @@
+- name: restart firewalld
+  service:
+    name: firewalld
+    state: restarted
+  become: yes
+
+- name: restart docker
+  service:
+    name: docker
+    state: restarted
+  become: yes
+
+- name: restart atomic-registry-master
+  service:
+    name: atomic-registry-master
+    state: restarted
+  become: yes
+
+- name: restart atomic-registry-console
+  service:
+    name: atomic-registry-console
+    state: restarted
+  become: yes
+
+- name: restart atomic-registry
+  service:
+    name: atomic-registry
+    state: restarted
+  become: yes
+
+- name: restart httpd
+  service:
+    name: httpd
+    state: restarted
+  become: yes

@@ -1,0 +1,22 @@
+---
+- fail:
+    msg: "Registry role is only relevant on CentOS"
+  when: ansible_distribution != 'CentOS'
+
+- include: hosts-file.yml
+
+- include: selinux.yml
+
+- include: firewalld.yml
+
+# Install and configure Atomic Registry software
+- include: install.yml
+
+# Apache reverse-proxy
+- include: httpd.yml
+
+# Watch and update containers
+- include: updates.yml
+
+# TODO: Letsencrypt:
+# - include: letsencrypt.yml

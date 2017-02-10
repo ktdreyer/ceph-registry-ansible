@@ -1,0 +1,22 @@
+- name: install prerequisites
+  yum:
+    name: "{{ item }}"
+    state: present
+  become: yes
+  with_items:
+    - git
+    - python-docker-py
+
+- git:
+    repo: https://github.com/ktdreyer/watch-systemd-containers
+    dest: /srv/watch-systemd-containers
+  become: yes
+
+- cron:
+    name: watch systemd containers
+    minute: 0
+    hour: 12
+    user: root
+    job: "PYTHONPATH=/srv/watch-systemd-containers /srv/watch-systemd-containers/bin/watch-systemd-containers"
+    cron_file: ansible_watch-containers
+  become: yes
