@@ -1,0 +1,26 @@
+- name: install EPEL
+  yum:
+    name: epel-release
+    state: present
+  become: yes
+
+- name: install certbot
+  yum:
+    name: certbot
+    state: present
+  become: yes
+
+- name: create initial letsencrypt ssl cert
+  command: "certbot certonly --webroot -w /var/www/html -d {{ ansible_fqdn }} --email kdreyer@redhat.com --agree-tos --renew-by-default --non-interactive"
+  become: yes
+  notify:
+   - restart httpd
+  when: letsencrypt_cert.stat.exists == False
+
+- name: setup a cron to renew the SSL cert every day
+  cron:
+    name: "renew letsencrypt cert for {{ ansible_fqdn }}"
+    minute: "21"
+    hour: "6,18"
+    job: "certbot renew --quiet"
+  become: yes

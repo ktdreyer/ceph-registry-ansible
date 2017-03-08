@@ -1,0 +1,7 @@
+# Initial SSL certs.
+#
+# If development_server is False, Ansible will override these after
+# bootstrapping letsencrypt.
+#
+ssl_cert: /etc/pki/tls/certs/localhost.crt
+ssl_key: /etc/pki/tls/private/localhost.key

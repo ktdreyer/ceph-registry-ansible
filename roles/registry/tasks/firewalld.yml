@@ -16,7 +16,6 @@
     state: present
   become: yes
 
-# No longer necessary?
 - name: configure custom Docker firewalld zone
   template:
     src: firewalld/zones/docker.xml
@@ -32,17 +31,33 @@
     state: started
   become: yes
 
-- name: add eth0 interface to external zone (live)
+- name: add eth0 interface to external zone
   firewalld:
     zone: external
     interface: "{{ ansible_default_ipv4.interface }}"
+    permanent: "{{ item }}"
+    state: enabled
+  become: yes
+  with_items:
+    - no
+    - yes
+
+- name: open HTTP(S) firewall ports in external zone
+  firewalld:
+    zone: external
+    service: "{{ item }}"
+    immediate: true
     permanent: true
     state: enabled
   become: yes
+  with_items:
+    - http
+    - https
 
-- name: open HTTPS firewall port
+# Allows containers to reach tcp/443 on the host's IP:
+- name: open HTTPS firewall port in docker zone
   firewalld:
-    zone: external
+    zone: docker
     service: https
     immediate: true
     permanent: true

@@ -6,12 +6,16 @@ Getting started
 
 To run the playbook:
 
-1. Set up ``~/.vault_pass.txt`` and ``./roles/registry/defaults/main.yml``
+1. Set up ``~/.vault_pass.txt``
 
-2. Ensure prod is enabled in ``registry.yml`` and
-   ``roles/registry/defaults/main.yml``.
+2. Set up your FQDN in ``vars`` dir, eg ``vars/registry.ceph.com.yml``, with
+   ``github_client_id`` and ``github_client_secret``. Encrypt this:
 
-3. Run ``make`` to run ``ansible-playbook`` with the proper arguments.
+::
+    ansible-vault --vault-password-file=~/.vault_pass.txt encrypt vars/registry.ceph.com.yml
+
+3. Run ``make dev`` to run ``ansible-playbook`` with the proper arguments for
+   your dev environment, or simply ``make`` for production.
 
 
 Development
@@ -32,7 +36,9 @@ production.
 
     ifconfig | awk '/inet /{print substr($2,1)}' | head -1
 
-4. Ensure SELinux is set to enforcing (``sestatus``).
+4. Ensure SELinux is set to enforcing (``sestatus``)::
+
+    sed -i 's/SELINUX=disabled/SELINUX=enforcing/g' /etc/selinux/config
 
 5. Update to the very latest packages. In particular firewalld has had some
    bugs. (See https://access.redhat.com/discussions/1455033 and
@@ -43,6 +49,11 @@ production.
 7. Ensure Ansible recognizes the hostname properly::
 
     ansible -i inventory -m setup kdreyer-registry | grep ansible_fqdn
+
+If this is not working, you may have to add the IP address to /etc/hosts. For
+example::
+
+    158.69.79.139 registry.ceph.com
 
 (At this point it would be a good idea to snapshot your VM before proceeding
 further, to save time in case you want to wipe it and start over.)
@@ -68,7 +79,7 @@ This shows the ``redirectURIs`` was still using the old :9090 address.
 
 3. Edit the file to remove the port number::
 
-    oc get oauthclient cockpit-oauth-client -o yaml
+    oc edit oauthclient cockpit-oauth-client -o yaml
 
 At this point, GitHub oauth should succeed.
 
@@ -154,5 +165,12 @@ From here you can ``ping``, ``ps``, etc.
 Ensure firewalld shows eth0 as part of the "external" zone::
 
     firewall-cmd --list-all --zone=external
+
+"What's the HTTP registry token?"
+---------------------------------
+
+docker exec atomic-registry-master oc get secret registry-token-79mqk --template '{{ .data.token }}'
+
+
 
 .. _Atomic Registry: http://docs.projectatomic.io/registry/latest/registry_quickstart/administrators/

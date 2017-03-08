@@ -1,8 +1,4 @@
 ---
-#- hosts: prod
-#  roles:
-#    - registry
-
 - hosts: kdreyer-registry
   roles:
     - registry

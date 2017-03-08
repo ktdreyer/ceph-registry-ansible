@@ -3,6 +3,11 @@
     msg: "Registry role is only relevant on CentOS"
   when: ansible_distribution != 'CentOS'
 
+- name: include variables for this environment
+  include_vars:
+    file: "vars/{{ ansible_fqdn }}.yml"
+  no_log: True
+
 - include: hosts-file.yml
 
 - include: selinux.yml
@@ -15,8 +20,8 @@
 # Apache reverse-proxy
 - include: httpd.yml
 
+- include: letsencrypt.yml
+  when: development_server == false
+
 # Watch and update containers
 - include: updates.yml
-
-# TODO: Letsencrypt:
-# - include: letsencrypt.yml

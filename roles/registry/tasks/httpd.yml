@@ -4,6 +4,19 @@
     state: present
   become: yes
 
+# If our letsencrypt cert does not exist yet, use the self-signed cert.
+- stat:
+    path: /etc/letsencrypt/live/{{ ansible_fqdn }}/cert.pem
+  register: letsencrypt_cert
+  become: yes
+
+- name: configure httpd to use letsencrypt certs
+  set_fact:
+     ssl_cert: /etc/letsencrypt/live/{{ ansible_fqdn }}/cert.pem
+     ssl_key: /etc/letsencrypt/live/{{ ansible_fqdn }}/privkey.pem
+     ssl_chain: /etc/letsencrypt/live/{{ ansible_fqdn }}/chain.pem
+  when: letsencrypt_cert.stat.exists
+
 - name: configure Apache
   template:
     src: httpd.conf
