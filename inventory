@@ -6,5 +6,4 @@ pipelining=true
 registry.ceph.com
 
 [kdreyer-registry]
-#kdreyer-registry.os1.phx2.redhat.com
 kdreyer-registry.ceph.redhat.com
