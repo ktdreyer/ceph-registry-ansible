@@ -12,6 +12,7 @@ To run the playbook:
    ``github_client_id`` and ``github_client_secret``. Encrypt this:
 
 ::
+
     ansible-vault --vault-password-file=~/.vault_pass.txt encrypt vars/registry.ceph.com.yml
 
 3. Run ``make dev`` to run ``ansible-playbook`` with the proper arguments for
