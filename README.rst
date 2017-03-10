@@ -169,8 +169,10 @@ Ensure firewalld shows eth0 as part of the "external" zone::
 "What's the HTTP registry token?"
 ---------------------------------
 
-docker exec atomic-registry-master oc get secret registry-token-79mqk --template '{{ .data.token }}'
+Use ``oc get``::
 
+    docker exec atomic-registry-master oc get secret registry-token-79mqk --template '{{ .data.token }}'
 
+Check out the Atomic Registry's ``setup.sh`` script for more information.
 
 .. _Atomic Registry: http://docs.projectatomic.io/registry/latest/registry_quickstart/administrators/
