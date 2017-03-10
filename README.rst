@@ -9,9 +9,7 @@ To run the playbook:
 1. Set up ``~/.vault_pass.txt``
 
 2. Set up your FQDN in ``vars`` dir, eg ``vars/registry.ceph.com.yml``, with
-   ``github_client_id`` and ``github_client_secret``. Encrypt this:
-
-::
+   ``github_client_id`` and ``github_client_secret``. Encrypt this::
 
     ansible-vault --vault-password-file=~/.vault_pass.txt encrypt vars/registry.ceph.com.yml
 
